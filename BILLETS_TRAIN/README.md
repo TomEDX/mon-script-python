@@ -24,9 +24,9 @@ python fusion_billets.py
 ## 🎯 Fonctionnalités principales
 
 - ✅ **Fusion automatique** des PDFs par personne
-- 📊 **Statistiques complètes** des trajets
-- 📈 **Visualisations graphiques** interactives
+- 📊 **Statistiques complètes** des trajets et fichiers
 - 🔍 **Détection** des billets non attribués
+- 📈 **Comptage automatique** des PDFs source et fusionnés
 
 ## 📖 Documentation complète
 
@@ -38,8 +38,6 @@ Aucune installation manuelle requise ! Le script installe automatiquement les d�
 
 - `pandas`
 - `pypdf`
-- `matplotlib`
-- `seaborn`
 
 ## 🤝 Contribution
 

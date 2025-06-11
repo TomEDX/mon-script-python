@@ -1,5 +1,8 @@
 === STATISTIQUES DE RÉPARTITION ===
 
+Nombre de PDF dans BILLETS_PDF : 708
+Nombre de billets fusionnés dans OUTPUT : 225
+
 Nombre de références non attribuées : 39
 Détails sauvegardés dans 'references_non_attribuees.csv'
 
@@ -20,41 +23,37 @@ Répartition par gare de départ :
   VALENCE : 4 (1.8%)
   LA_ROCHELLE : 1 (0.4%)
 
-Répartition par type de billet (19 juin) :
+Répartition par type de billet (Aller) :
   Groupe : 198 (88.4%)
   Individuel : 26 (11.6%)
 
-Répartition par type de billet (21) :
+Répartition par type de billet (Retour) :
   Groupe : 195 (87.4%)
   Individuel : 28 (12.6%)
 
 === STATISTIQUES DES TRAJETS ===
 Trajets aller directs : 109 (48.7%)
 Trajets aller avec escale : 115 (51.3%)
-Trajets retour directs : 116 (52.3%)
-Trajets retour avec escale : 106 (47.7%)
+Trajets retour directs : 116 (52.0%)
+Trajets retour avec escale : 107 (48.0%)
 
 Répartition des gares d'arrivée (aller) :
   POITIERS : 223 (100.0%)
 
 Répartition des gares d'arrivée (retour) :
-  PARIS : 85 (38.5%)
+  PARIS : 85 (38.3%)
   LYON : 23 (10.4%)
+  LILLE : 20 (9.0%)
   MARSEILLE : 20 (9.0%)
-  LILLE : 19 (8.6%)
   BORDEAUX : 14 (6.3%)
   CHAMBERY : 12 (5.4%)
 
-=== COMPARAISON ALLER-RETOUR ===
+=== TRAJETS SYMÉTRIQUES ===
 
 Trajets symétriques les plus fréquents :
-  PARIS-POITIERS : 84 (38.2%)
-  LYON-POITIERS : 23 (10.5%)
-  MARSEILLE-POITIERS : 20 (9.1%)
-  LILLE-POITIERS : 19 (8.6%)
-  BORDEAUX-POITIERS : 14 (6.4%)
-  CHAMBERY-POITIERS : 12 (5.5%)
-
-Comparaison des escales aller-retour :
-  Direct à l'aller et au retour : 107 (48.4%)
-  Escale à l'aller et au retour : 106 (48.0%)
+  PARIS-POITIERS : 84 (38.0%)
+  LYON-POITIERS : 23 (10.4%)
+  LILLE-POITIERS : 20 (9.0%)
+  MARSEILLE-POITIERS : 20 (9.0%)
+  BORDEAUX-POITIERS : 14 (6.3%)
+  CHAMBERY-POITIERS : 12 (5.4%)

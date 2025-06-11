@@ -9,14 +9,13 @@ from typing import List, Dict, Any
 
 from .config import (
     CHEMIN_CSV_DEFAUT, REPERTOIRE_PDF_DEFAUT, REPERTOIRE_SORTIE_DEFAUT,
-    REPERTOIRE_GRAPHIQUES, FICHIER_STATS, FICHIER_REFS_NON_ATTRIBUEES,
+    FICHIER_STATS, FICHIER_REFS_NON_ATTRIBUEES,
     GARES_VALIDES, SEUIL_AFFICHAGE_POURCENTAGE
 )
 from .utils import (
     installer_si_necessaire, nettoyer_reference, extraire_gare_depart,
     extraire_gare_arrivee, est_reference_valide, formater_pourcentage
 )
-from .visualisations import GenerateurVisualisations
 
 
 class GestionnaireBillets:
@@ -31,10 +30,6 @@ class GestionnaireBillets:
         self.repertoire_sortie = Path(repertoire_sortie)
         self.repertoire_sortie.mkdir(exist_ok=True)
         
-        # Création du répertoire des graphiques
-        self.repertoire_graphiques = self.repertoire_sortie / REPERTOIRE_GRAPHIQUES
-        self.repertoire_graphiques.mkdir(exist_ok=True)
-        
         # Installation et import des dépendances
         installer_si_necessaire('pandas')
         installer_si_necessaire('pypdf')
@@ -48,20 +43,6 @@ class GestionnaireBillets:
         
         self.df = None
         self.stats_contenu = []
-        
-        # Stockage des données statistiques pour visualisation
-        self.stats_visualisation = {
-            'gares_depart': [],
-            'types_billets': {},
-            'stats_trajets': {},
-            'compteurs_escales': {},
-            'gares_arrivee_aller': [],
-            'gares_arrivee_retour': [],
-            'trajets_symetriques': []
-        }
-        
-        # Générateur de visualisations
-        self.generateur_viz = GenerateurVisualisations(self.repertoire_graphiques)
     
     def log_stat(self, texte: str = '') -> None:
         """Ajoute une ligne aux statistiques"""
@@ -161,7 +142,7 @@ class GestionnaireBillets:
                     if len(gares) != 2 or not all(g in GARES_VALIDES for g in gares):
                         refs_non_attribuees.append([ref, "Format invalide"])
                 else:
-                    refs_non_attribuees.append([ref, "Pas de gare trouvée"])
+                    refs_non_attribuees.append([ref, "Pas de référence dans le CSV"])
         
         if refs_non_attribuees:
             with open(FICHIER_REFS_NON_ATTRIBUEES, 'w', newline='', encoding='utf-8') as f:
@@ -175,6 +156,12 @@ class GestionnaireBillets:
         """Génère toutes les statistiques"""
         self.log_stat('=== STATISTIQUES DE RÉPARTITION ===')
         
+        # Statistiques des fichiers
+        nb_pdf_source = len(list(self.repertoire_pdf.glob('*.pdf')))
+        nb_pdf_fusionnes = len(list(self.repertoire_sortie.glob('*.pdf')))
+        self.log_stat(f"\nNombre de PDF dans {self.repertoire_pdf.name} : {nb_pdf_source}")
+        self.log_stat(f"Nombre de billets fusionnés dans {self.repertoire_sortie.name} : {nb_pdf_fusionnes}")
+        
         # Billets non utilisés
         nb_non_utilises = self.detecter_billets_non_utilises()
         if nb_non_utilises > 0:
@@ -187,7 +174,6 @@ class GestionnaireBillets:
         gares_arrivee_aller = []
         gares_arrivee_retour = []
         trajets_symetriques = []
-        compteurs_escales = defaultdict(int)
         
         for _, row in self.df.iterrows():
             refs = self.extraire_references_personne(row)
@@ -221,32 +207,13 @@ class GestionnaireBillets:
                 aller['gare_depart'] == retour['gare_arrivee'] and 
                 aller['gare_arrivee'] == retour['gare_depart']):
                 trajets_symetriques.append(f"{aller['gare_depart']}-{aller['gare_arrivee']}")
-            
-            # Comparaison escales
-            if aller['gare_depart'] and retour['gare_depart']:
-                if not aller['est_direct'] and not retour['est_direct']:
-                    compteurs_escales['Escale à l\'aller et au retour'] += 1
-                elif aller['est_direct'] and retour['est_direct']:
-                    compteurs_escales['Direct à l\'aller et au retour'] += 1
-                elif not aller['est_direct'] and retour['est_direct']:
-                    compteurs_escales['Escale à l\'aller et direct au retour'] += 1
-                elif aller['est_direct'] and not retour['est_direct']:
-                    compteurs_escales['Direct à l\'aller et escale au retour'] += 1
-        
-        # Stockage des données pour visualisation
-        self.stats_visualisation['gares_depart'] = gares_depart
-        self.stats_visualisation['stats_trajets'] = stats_trajets
-        self.stats_visualisation['compteurs_escales'] = dict(compteurs_escales)
-        self.stats_visualisation['gares_arrivee_aller'] = gares_arrivee_aller
-        self.stats_visualisation['gares_arrivee_retour'] = gares_arrivee_retour
-        self.stats_visualisation['trajets_symetriques'] = trajets_symetriques
         
         # Affichage des statistiques
         self._afficher_statistiques_gares_depart(gares_depart)
         self._afficher_statistiques_types_billets()
         self._afficher_statistiques_trajets(stats_trajets)
         self._afficher_statistiques_gares_arrivee(gares_arrivee_aller, gares_arrivee_retour)
-        self._afficher_comparaisons_aller_retour(trajets_symetriques, compteurs_escales)
+        self._afficher_trajets_symetriques(trajets_symetriques)
         
         # Sauvegarde
         with open(FICHIER_STATS, 'w', encoding='utf-8') as f:
@@ -262,10 +229,9 @@ class GestionnaireBillets:
     
     def _afficher_statistiques_types_billets(self) -> None:
         """Affiche les statistiques des types de billets"""
-        for col, nom in [('Type de billet 19 juin', '19 juin'), ('Type de billet 21', '21')]:
+        for col, nom in [('Type de billet 19 juin', 'Aller'), ('Type de billet 21', 'Retour')]:
             if col in self.df.columns:
                 types = self.df[col].value_counts()
-                self.stats_visualisation['types_billets'][nom] = types.to_dict()
                 self.log_stat(f'\nRépartition par type de billet ({nom}) :')
                 for typ, count in types.items():
                     self.log_stat(f"  {typ} : {formater_pourcentage(count, types.sum())}")
@@ -292,26 +258,14 @@ class GestionnaireBillets:
                     if count / len(gares) > SEUIL_AFFICHAGE_POURCENTAGE:  # Seuil 5%
                         self.log_stat(f"  {gare} : {formater_pourcentage(count, len(gares))}")
     
-    def _afficher_comparaisons_aller_retour(self, trajets_symetriques: List[str], compteurs_escales: Dict[str, int]) -> None:
-        """Affiche les comparaisons aller-retour"""
-        self.log_stat('\n=== COMPARAISON ALLER-RETOUR ===')
-        
+    def _afficher_trajets_symetriques(self, trajets_symetriques: List[str]) -> None:
+        """Affiche les trajets symétriques"""
         if trajets_symetriques:
+            self.log_stat('\n=== TRAJETS SYMÉTRIQUES ===')
             self.log_stat('\nTrajets symétriques les plus fréquents :')
             for trajet, count in Counter(trajets_symetriques).most_common():
                 if count / len(trajets_symetriques) > SEUIL_AFFICHAGE_POURCENTAGE:
                     self.log_stat(f"  {trajet} : {formater_pourcentage(count, len(trajets_symetriques))}")
-        
-        if compteurs_escales:
-            self.log_stat('\nComparaison des escales aller-retour :')
-            total_comp = sum(compteurs_escales.values())
-            for typ, count in Counter(compteurs_escales).most_common():
-                if count / total_comp > SEUIL_AFFICHAGE_POURCENTAGE:
-                    self.log_stat(f"  {typ} : {formater_pourcentage(count, total_comp)}")
-    
-    def generer_visualisations(self) -> None:
-        """Génère les visualisations graphiques"""
-        self.generateur_viz.generer_toutes_visualisations(self.stats_visualisation)
     
     def executer_analyse_complete(self) -> None:
         """Exécute l'analyse complète"""
@@ -329,11 +283,7 @@ class GestionnaireBillets:
         print("Génération des statistiques...")
         self.generer_toutes_les_statistiques()
         
-        print("Génération des visualisations...")
-        self.generer_visualisations()
-        
         print("Analyse terminée !")
         print(f"- PDFs fusionnés dans : {self.repertoire_sortie}")
         print(f"- Statistiques dans : {FICHIER_STATS}")
-        print(f"- Références non attribuées dans : {FICHIER_REFS_NON_ATTRIBUEES}")
-        print(f"- Graphiques dans : {self.repertoire_graphiques}") 
+        print(f"- Références non attribuées dans : {FICHIER_REFS_NON_ATTRIBUEES}") 

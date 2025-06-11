@@ -12,13 +12,11 @@ Le projet a été restructuré en modules organisés par répertoires selon les 
 │   ├── __init__.py              # Package principal
 │   ├── config.py                # Configuration et constantes
 │   ├── utils.py                 # Fonctions utilitaires
-│   ├── visualisations.py        # Module de génération des graphiques
 │   └── gestionnaire.py          # Classe principale GestionnaireBillets
 ├── 📁 docs/                      # Documentation
 │   └── README.md                # Documentation détaillée
 ├── 📁 BILLETS_PDF/               # Répertoire des PDFs de billets (requis)
 └── 📁 OUTPUT/                    # Répertoire de sortie
-    ├── graphs/                  # Graphiques générés
     ├── *.pdf                    # PDFs fusionnés par personne
     ├── statistiques_repartition.txt
     └── references_non_attribuees.csv
@@ -34,19 +32,12 @@ Le projet a été restructuré en modules organisés par répertoires selon les 
 
 ### Statistiques complètes
 
+- **Comptage des fichiers** : Nombre de PDFs source et fusionnés
 - Répartition par gares de départ/arrivée
 - Types de billets par date
 - Comparaison trajets directs vs avec escale
 - Analyse des trajets symétriques
 - Détection des billets non attribués
-
-### Visualisations graphiques
-
-- **Camemberts** : Types de billets par date
-- **Graphiques en barres** : Gares de départ
-- **Histogrammes** : Comparaison escales/direct
-- **Top 10** : Destinations les plus populaires
-- **Comparaisons** : Aller vs Retour
 
 ## 🛠 Utilisation
 
@@ -85,13 +76,14 @@ gestionnaire = src.GestionnaireBillets()
 
 1. **PDFs fusionnés** : Un PDF par personne dans `OUTPUT/`
 2. **Statistiques texte** : `statistiques_repartition.txt`
+   - Nombre de PDFs dans BILLETS_PDF
+   - Nombre de billets fusionnés dans OUTPUT
+   - Répartition des gares de départ/arrivée
+   - Types de billets par date
+   - Statistiques des trajets directs vs avec escale
+   - Trajets symétriques
+   - Comparaisons aller-retour
 3. **Références non attribuées** : `references_non_attribuees.csv`
-4. **Graphiques** : Dans `OUTPUT/graphs/`
-   - `types_billets_*.png`
-   - `gares_depart.png`
-   - `types_escales.png`
-   - `comparaison_directs_escales.png`
-   - `top_gares_arrivee.png`
 
 ## 🔧 Configuration
 
@@ -99,8 +91,7 @@ Toutes les constantes sont centralisées dans `src/config.py` :
 
 - Gares valides
 - Chemins par défaut
-- Paramètres de visualisation
-- Seuils d'affichage
+- Seuils d'affichage des statistiques
 
 ## 📦 Modules
 
@@ -118,21 +109,14 @@ Fonctions utilitaires réutilisables :
 - Traitement des références de billets
 - Formatage des données
 
-#### `src/visualisations.py`
-
-Génération des graphiques avec matplotlib/seaborn :
-
-- Backend non-interactif pour l'exécution batch
-- Graphiques haute résolution (300 DPI)
-- Palette de couleurs harmonieuse
-
 #### `src/gestionnaire.py`
 
 Classe principale avec toute la logique métier :
 
 - Fusion des PDFs
 - Calcul des statistiques
-- Coordination des modules
+- Comptage des fichiers
+- Génération des rapports
 
 ### 📁 `docs/` - Documentation
 
@@ -188,7 +172,7 @@ Point d'entrée simple et propre de l'application.
 ├── tests/
 │   ├── test_utils.py
 │   ├── test_gestionnaire.py
-│   └── test_visualisations.py
+│   └── test_config.py
 ```
 
 Cette structure respecte les conventions Python et facilite la maintenance, l'extension et la collaboration sur le projet !
